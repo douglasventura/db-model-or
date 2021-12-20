@@ -224,3 +224,10 @@ CREATE OR REPLACE TYPE BODY tp_entrega AS
         DBMS_OUTPUT.PUT_LINE('Status: ' || SELF.pacote.status);       
     END;
 END;
+/
+-- TIPO "TEM" REPRESENTA O RELACIONAMENTO DA ENTIDADE ASSOCIATIVA PACOTE-FRETE COM DESCONTO
+CREATE OR REPLACE TYPE tp_tem AS OBJECT(
+    pacote REF tp_pacote,
+    frete REF tp_frete,
+    desconto REF tp_desconto
+);

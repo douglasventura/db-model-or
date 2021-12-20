@@ -50,3 +50,10 @@ CREATE TABLE tb_entrega OF tp_entrega(
     cliente SCOPE IS tb_cliente,
     data_hora NOT NULL -- ('DD/MM/YYYY HH24:MI')
 );
+
+-- TABELA TEM - ENTIDADE ASSOCIATIVA ENTRE PACOTE-FRETE COM DESCONTO
+CREATE TABLE tb_tem OF tp_tem(
+	pacote WITH ROWID REFERENCES tb_pacote,
+	frete WITH ROWID REFERENCES tb_frete,
+	desconto WITH ROWID REFERENCES tb_desconto
+);
