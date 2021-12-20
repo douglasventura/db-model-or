@@ -17,7 +17,7 @@ CREATE OR REPLACE TYPE BODY tp_endereco AS
         DBMS_OUTPUT.PUT_LINE('Endereço:');
         DBMS_OUTPUT.PUT_LINE(rua || ', ' || TO_CHAR(numero));
         DBMS_OUTPUT.PUT_LINE(cidade || ', ' || estado);
-        DBMS_OUTPUT.PUT_LINE('CEP :' || cep);
+        DBMS_OUTPUT.PUT_LINE('CEP: ' || cep);
     END;
 END;
 /
@@ -25,7 +25,7 @@ END;
 -- CRIACAO DO TIPO TELEFONE
 CREATE OR REPLACE TYPE tp_telefone AS OBJECT(
     telefone VARCHAR(14) -- (XX)XXXXX-XXXX
-) NOT FINAL NOT INSTANTIABLE;
+) NOT FINAL;
 /
 
 -- CRIACAO DO TIPO TELEFONES (ATRIBUTO MULTIVALORADO - LISTA DE VARIOS TELEFONES)
@@ -58,11 +58,12 @@ CREATE OR REPLACE TYPE BODY tp_pessoa AS
     BEGIN
         IF SELF.nome > P.nome THEN
             RETURN (1);
-        ELSE IF SELF.nome < P.nome THEN
-            RETURN (-1);
-            END IF;
         ELSE
-            RETURN (0);
+            IF SELF.nome < P.nome THEN
+                RETURN (-1);
+            ELSE
+                RETURN (0);
+            END IF;
         END IF;
     END;
 
@@ -92,28 +93,27 @@ CREATE OR REPLACE TYPE BODY tp_entregador AS
     MEMBER PROCEDURE comparaSalario(E1 tp_entregador, E2 tp_entregador) IS
     BEGIN
         IF E1.salario > E2.salario THEN
-            dif1 NUMBER := E1.salario - E2.salario;
-            DBMS_OUTPUT.PUT_LINE(E1.nome || ' recebe R$' || dif1 || ' a mais que ' || E2.nome);
-        ELSE IF E1.salario < E2.salario THEN
-            dif2 NUMBER := E2.salario - E1.salario;
-            DBMS_OUTPUT.PUT_LINE(E2.nome || ' recebe R$' || dif2 || ' a mais que ' || E1.nome);
-            END IF;
+            DBMS_OUTPUT.PUT_LINE(E1.nome || ' recebe R$' || (E1.salario - E2.salario) || ' a mais que ' || E2.nome);
         ELSE
-            DBMS_OUTPUT.PUT_LINE(E2.nome || ' e ' || E1.nome || ' recebem o mesmo salario');
+            IF E1.salario < E2.salario THEN
+                DBMS_OUTPUT.PUT_LINE(E2.nome || ' recebe R$' || (E2.salario - E1.salario) || ' a mais que ' || E1.nome);
+            ELSE
+                DBMS_OUTPUT.PUT_LINE(E2.nome || ' e ' || E1.nome || ' recebem o mesmo salario');
+            END IF;
         END IF;        
     END;
     
     FINAL MEMBER FUNCTION bonusSalarioAnual(E tp_entregador) RETURN NUMBER IS
     BEGIN
-        RETURN E.salario * 1.15;
+        RETURN (E.salario * 1.15);
     END;
 
     OVERRIDING MEMBER FUNCTION mesmoLugar(P1 tp_pessoa, P2 tp_pessoa) RETURN BOOLEAN IS
     BEGIN
         IF P1.endereco.cidade = P2.endereco.cidade THEN
-            RETURN (TRUE);
+            RETURN TRUE;
         ELSE 
-            RETURN (FALSE);
+            RETURN FALSE;
         END IF;
     END;
 END;
@@ -170,29 +170,16 @@ CREATE OR REPLACE TYPE tp_frete AS OBJECT(
     tipo VARCHAR(9),
     pacotes tp_nt_pacotes,
 
-    MEMBER PROCEDURE detalhesFrete (SELF tp_frete)
+    MEMBER PROCEDURE detalhesFrete (F tp_frete)
 );
 /
 
 -- BODY DO TIPO FRETE
 CREATE OR REPLACE TYPE BODY tp_frete AS
-    MEMBER PROCEDURE detalhesFrete (SELF tp_frete) IS
+    MEMBER PROCEDURE detalhesFrete (F tp_frete) IS
     BEGIN
-        DBMS_OUTPUT.PUT_LINE('Custo do frete: ' || 'R$'|| TO_CHAR(SELF.preco));        
-        DBMS_OUTPUT.PUT_LINE('Tipo do frete: ' || SELF.tipo);
-
-        DBMS_OUTPUT.PUT_LINE('Pacotes: ' || SELF.pacotes.id);
-
-        i INTEGER := SELF.pacotes.id.FIRST;
-        
-        WHILE i IS NOT NULL LOOP
-            IF i != SELF.pacotes.id.LAST THEN
-                DBMS_OUTPUT.PUT(TO_CHAR(SELF.pacotes.id(i)) || ', ');
-                i := SELF.pacotes.id.NEXT(i);
-            ELSE
-                DBMS_OUTPUT.PUT(TO_CHAR(SELF.pacotes.id(i)) || '.');
-            END IF;
-        END LOOP;
+        DBMS_OUTPUT.PUT_LINE('Custo do frete: ' || 'R$'|| TO_CHAR(F.preco));        
+        DBMS_OUTPUT.PUT_LINE('Tipo do frete: ' || F.tipo);
     END;
 END;
 /
@@ -209,22 +196,10 @@ CREATE OR REPLACE TYPE tp_entrega AS OBJECT(
     entregador REF tp_entregador,
     pacote REF tp_pacote,
     cliente REF tp_cliente,
-    data_hora DATE, -- ('DD/MM/YYYY HH24:MI')
-
-    MEMBER PROCEDURE detalhesEntrega (SELF tp_entrega)
+    data_hora DATE -- ('DD/MM/YYYY HH24:MI')
 );
 /
 
--- BODY DO TIPO ENTREGA
-CREATE OR REPLACE TYPE BODY tp_entrega AS
-    MEMBER PROCEDURE detalhesEntrega (SELF tp_entrega) IS 
-    BEGIN
-        DBMS_OUTPUT.PUT_LINE('Nome do Entregador: ' || SELF.entregador.nome);        
-        DBMS_OUTPUT.PUT_LINE('Nome do Cliente: ' || SELF.cliente.nome);       
-        DBMS_OUTPUT.PUT_LINE('Status: ' || SELF.pacote.status);       
-    END;
-END;
-/
 -- TIPO "TEM" REPRESENTA O RELACIONAMENTO DA ENTIDADE ASSOCIATIVA PACOTE-FRETE COM DESCONTO
 CREATE OR REPLACE TYPE tp_tem AS OBJECT(
     pacote REF tp_pacote,
