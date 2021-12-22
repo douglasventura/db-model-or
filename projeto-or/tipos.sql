@@ -1,6 +1,6 @@
 -- CRIACAO DO TIPO ENDERECO
 CREATE OR REPLACE TYPE tp_endereco AS OBJECT(
-	cep VARCHAR(10), -- XX.XXX-XXX
+	cep VARCHAR2(10), -- XX.XXX-XXX
 	rua VARCHAR2(255),
     numero INTEGER,
     cidade VARCHAR2(255),
@@ -24,7 +24,7 @@ END;
 
 -- CRIACAO DO TIPO TELEFONE
 CREATE OR REPLACE TYPE tp_telefone AS OBJECT(
-    telefone VARCHAR(14) -- (XX)XXXXX-XXXX
+    telefone VARCHAR2(14) -- (XX)XXXXX-XXXX
 ) NOT FINAL;
 /
 
@@ -34,8 +34,8 @@ CREATE OR REPLACE TYPE tp_telefones AS VARRAY(3) OF tp_telefone;
 
 -- CRIACAO DO TIPO PESSOA
 CREATE OR REPLACE TYPE tp_pessoa AS OBJECT(
-    nome VARCHAR(255),
-    cpf VARCHAR(14), -- XXX.XXX.XXX-XX
+    nome VARCHAR2(255),
+    cpf VARCHAR2(14), -- XXX.XXX.XXX-XX
     endereco tp_endereco,
 
     CONSTRUCTOR FUNCTION tp_pessoa(SELF IN OUT NOCOPY tp_pessoa, nome VARCHAR2, cpf VARCHAR2, endereco tp_endereco) RETURN SELF AS RESULT,
@@ -132,7 +132,7 @@ CREATE OR REPLACE TYPE tp_cliente UNDER tp_pessoa(
 -- CRIACAO DO TIPO PACOTE
 CREATE OR REPLACE TYPE tp_pacote AS OBJECT(
     id INTEGER,
-    status_entrega VARCHAR(10),
+    status_entrega VARCHAR2(10),
     endereco_destino tp_endereco,
 
     MAP MEMBER FUNCTION ordernaPorStatus RETURN NUMBER
@@ -158,7 +158,7 @@ CREATE TYPE tp_nt_pacotes AS TABLE OF tp_pacote;
 
 -- CRIACAO DO TIPO DECONTO
 CREATE OR REPLACE TYPE tp_desconto AS OBJECT(
-    cupom VARCHAR(10),
+    cupom VARCHAR2(10),
     valor NUMBER
 );
 /
@@ -167,7 +167,7 @@ CREATE OR REPLACE TYPE tp_desconto AS OBJECT(
 CREATE OR REPLACE TYPE tp_frete AS OBJECT(
     id INTEGER,
     preco NUMBER,
-    tipo VARCHAR(9),
+    tipo VARCHAR2(9),
     pacotes tp_nt_pacotes,
 
     MEMBER PROCEDURE detalhesFrete (F tp_frete)
@@ -187,7 +187,7 @@ END;
 -- CRIACAO DO TIPO IMPOSTO
 CREATE OR REPLACE TYPE tp_imposto AS OBJECT(
     valor NUMBER,
-    tipo VARCHAR(13)
+    tipo VARCHAR2(13)
 );
 /
 
